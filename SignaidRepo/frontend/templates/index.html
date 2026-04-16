@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 fade-up">
+    <div class="page-heading">
+        <h2>Live Emergency Map</h2>
+        <p class="mb-0">Active emergency signals across Bulgaria</p>
+    </div>
+    {% if stats.active_signals > 0 %}
+    <div class="live-badge">
+        <span class="live-dot"></span>
+        {{ stats.active_signals }} Active Signal{{ 's' if stats.active_signals != 1 }}
+    </div>
+    {% endif %}
+</div>
+
+<div id="map" class="mb-4 fade-up fade-up-1"></div>
+
+<div class="text-center my-5 fade-up fade-up-2">
+    <button id="main-action-btn"
+            class="btn {% if has_active %}btn-resolved{% else %}btn-emergency{% endif %} px-5 py-3"
+            data-active="{{ 'true' if has_active else 'false' }}"
+            onclick="toggleEmergency()">
+        {% if has_active %}
+            ✅ RESOLVE EMERGENCY
+        {% else %}
+            ⚠️ EMERGENCY ⚠️
+        {% endif %}
+    </button>
+</div>
+
+<div class="row g-4 text-center mb-5">
+    <div class="col-6 col-md-3 fade-up fade-up-1">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">👥</span></div>
+            <h3 class="fw-bold">{{ stats.users }}</h3>
+            <p>Registered Users</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 fade-up fade-up-2">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">⚠️</span></div>
+            <h3 id="stat-total" class="fw-bold">{{ stats.total_signals }}</h3>
+            <p>Total Signals</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 fade-up fade-up-3">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">📈</span></div>
+            <h3 id="stat-active" class="fw-bold text-danger">{{ stats.active_signals }}</h3>
+            <p>Active Signals</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 fade-up fade-up-4">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">🛡️</span></div>
+            <h3 id="stat-resolved" class="fw-bold">{{ stats.resolved }}</h3>
+            <p>Resolved</p>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Details Modal -->
+<div class="modal fade" id="emergencyDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <!-- Normal view -->
+                <div id="emergency-form-view">
+                    <div class="warning-icon-wrapper mb-3">
+                        <span class="warning-icon">⚠️</span>
+                    </div>
+                    <h3 class="fw-bold mb-1" style="font-family:'Syne',sans-serif;">What is the emergency?</h3>
+                    <p class="text-muted mb-4" style="font-size:0.95rem;">Select the type(s) of emergency you are experiencing.</p>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="emergency-chips-container">
+                        <button type="button" class="emergency-chip">Health Emergency</button>
+                        <button type="button" class="emergency-chip">Wildfire</button>
+                        <button type="button" class="emergency-chip">Flood</button>
+                        <button type="button" class="emergency-chip">Car Accident</button>
+                        <button type="button" class="emergency-chip">Animal Attack</button>
+                        <button type="button" class="emergency-chip">Earthquake</button>
+                        <button type="button" class="emergency-chip">Lost / Stranded</button>
+                        <button type="button" class="emergency-chip">Severe Injury</button>
+                        <button type="button" class="emergency-chip">Poisoning</button>
+                        <button type="button" class="emergency-chip">Drowning</button>
+                        <button type="button" class="emergency-chip">Landslide</button>
+                        <button type="button" class="emergency-chip">Power Outage (Critical)</button>
+                        <button type="button" class="emergency-chip">Other</button>
+                    </div>
+
+                    <div class="mb-4">
+                        <textarea id="emergency-details-input" class="form-control custom-textarea" rows="3"
+                            placeholder="Any additional details about the emergency..."></textarea>
+                    </div>
+
+                    <button type="button" id="confirm-emergency-btn"
+                        class="btn btn-emergency-submit w-100 py-3 rounded-pill fw-bold" disabled>
+                        Send Emergency Signal
+                    </button>
+                </div>
+
+                <!-- Loading spinner view -->
+                <div id="emergency-loading-view" style="display:none; padding: 20px 0;">
+                    <div class="spinner-wrapper mb-4">
+                        <div class="sig-spinner"></div>
+                    </div>
+                    <h4 class="fw-bold mb-2" style="font-family:'Syne',sans-serif;">Sending Signal...</h4>
+                    <p class="text-muted" style="font-size:0.92rem;" id="spinner-status">Locating your GPS position...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Confirm Modal -->
+<div class="modal fade" id="resolveConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div style="width:56px;height:56px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;">✅</div>
+                <h5 class="fw-bold mb-2" style="font-family:'Syne',sans-serif;">Resolve Emergency?</h5>
+                <p class="text-muted mb-4" style="font-size:0.88rem;">Are you sure the situation is under control? This will remove your active signal.</p>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn w-50 py-2" style="border:1.5px solid #e8eaef;border-radius:12px;font-weight:600;font-size:0.9rem;" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn w-50 py-2" id="confirm-resolve-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:white;border-radius:12px;font-weight:600;font-size:0.9rem;border:none;">Resolve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => { if (window.map) window.map.invalidateSize(); }, 400);
+</script>
+
+{% endblock %}

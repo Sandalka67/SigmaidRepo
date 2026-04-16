@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="profile-container mt-4 mb-5 fade-up">
+    <a href="{{ url_for('index') }}" class="back-link mb-4 d-inline-flex">← Back to map</a>
+
+    <div class="d-flex align-items-center gap-3 mt-3 mb-5">
+        <div class="profile-avatar">
+            {{ current_user.full_name[0].upper() }}
+        </div>
+        <div>
+            <div class="profile-name">{{ current_user.full_name }}</div>
+            <div class="text-muted" style="font-size:0.92rem;">{{ current_user.email }}</div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('profile') }}">
+
+        <div class="mb-5">
+            <div class="section-label">Phone Number</div>
+            <input type="text" name="phone" class="form-control" 
+                value="{{ current_user.phone or '' }}" 
+                placeholder="Enter your phone number"
+                style="max-width:320px;">
+        </div>
+
+        <div class="mb-5">
+            <div class="section-label">Health Conditions</div>
+            <p class="text-muted mb-3" style="font-size:0.88rem;">Select any conditions that apply — this helps responders.</p>
+            <div class="d-flex flex-wrap" style="margin-left:-4px;">
+                {% set active_conditions = current_user.health_conditions.split(',') | map('trim') | list if current_user.health_conditions else [] %}
+                {% set all_conditions = ["Heart Disease", "Hypertension", "Diabetes", "Asthma", "Epilepsy", "Allergies (Severe)", "Blood Clotting Disorder", "Chronic Kidney Disease", "Stroke History", "Pacemaker", "Arrhythmia", "COPD", "Cancer (Active)", "Mobility Impairment", "Mental Health Condition", "Pregnancy"] %}
+
+                {% for cond in all_conditions %}
+                <div class="condition-chip {% if cond in active_conditions %}active{% endif %}"
+                     onclick="toggleChip(this, '{{ cond }}')">
+                    {{ cond }}
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="health_conditions" id="conditions_input" value="{{ current_user.health_conditions or '' }}">
+        </div>
+
+        <div class="mb-5">
+            <div class="section-label">Additional Health Notes</div>
+            <textarea name="notes" class="form-control custom-textarea" rows="4"
+                placeholder="Any other health details responders should know...">{{ current_user.notes or '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-save">
+            Save Changes
+        </button>
+    </form>
+</div>
+
+<script>
+function toggleChip(element, value) {
+    element.classList.toggle('active');
+    const input = document.getElementById('conditions_input');
+    let tags = input.value ? input.value.split(',').map(t => t.trim()).filter(t => t) : [];
+    if (element.classList.contains('active')) {
+        if (!tags.includes(value)) tags.push(value);
+    } else {
+        tags = tags.filter(t => t !== value);
+    }
+    input.value = tags.join(', ');
+}
+</script>
+{% endblock %}
