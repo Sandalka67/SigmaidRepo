@@ -10,6 +10,8 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(20))
     health_conditions = db.Column(db.Text)
     notes = db.Column(db.Text)
+    last_lng = db.Column(db.Float)
+    last_lat = db.Column(db.Float)
     
     password_hash = db.Column(db.String(256))
 
