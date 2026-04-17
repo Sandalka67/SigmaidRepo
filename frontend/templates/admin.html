@@ -3,12 +3,12 @@
 
 <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 fade-up">
     <div class="page-heading">
-        <h2>🛡️ Admin Panel</h2>
-        <p class="mb-0">Manage users and emergency signals</p>
+        <h2 data-i18n="adminPanel">🛡️ Admin Panel</h2>
+        <p class="mb-0" data-i18n="adminSub">Manage users and emergency signals</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
-        <span style="background:#ffeaec;color:#e82a3d;padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Admin Access</span>
-        <a href="{{ url_for('index') }}" style="font-size:0.88rem;color:#6b7280;text-decoration:none;font-weight:500;">← Back to Map</a>
+        <span style="background:#ffeaec;color:#e82a3d;padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;" data-i18n="adminAccess">Admin Access</span>
+        <a href="{{ url_for('index') }}" style="font-size:0.88rem;color:#6b7280;text-decoration:none;font-weight:500;" data-i18n="backToMap2">← Back to Map</a>
     </div>
 </div>
 
@@ -18,28 +18,28 @@
         <div class="card-stat shadow-sm">
             <div><span class="stat-icon">👥</span></div>
             <h3 class="fw-bold">{{ stats.users }}</h3>
-            <p>Total Users</p>
+            <p data-i18n="totalUsers">Total Users</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card-stat shadow-sm">
             <div><span class="stat-icon">⚠️</span></div>
             <h3 class="fw-bold">{{ stats.total_signals }}</h3>
-            <p>Total Signals</p>
+            <p data-i18n="totalSignalsAdmin">Total Signals</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card-stat shadow-sm">
             <div><span class="stat-icon">📈</span></div>
             <h3 class="fw-bold text-danger">{{ stats.active_signals }}</h3>
-            <p>Active Signals</p>
+            <p data-i18n="activeSignalsAdmin">Active Signals</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card-stat shadow-sm">
             <div><span class="stat-icon">🛡️</span></div>
             <h3 class="fw-bold">{{ stats.resolved }}</h3>
-            <p>Resolved</p>
+            <p data-i18n="resolvedAdmin">Resolved</p>
         </div>
     </div>
 </div>
@@ -47,18 +47,18 @@
 <!-- Active Signals -->
 <div class="admin-section fade-up fade-up-2">
     <div class="admin-section-header">
-        <h5 class="fw-bold mb-0">🚨 Active Emergency Signals</h5>
-        <span class="admin-badge-red">{{ stats.active_signals }} Active</span>
+        <h5 class="fw-bold mb-0" data-i18n="activeEmergencySignals">🚨 Active Emergency Signals</h5>
+        <span class="admin-badge-red">{{ stats.active_signals }} <span data-i18n="activeSignalsAdmin">Active</span></span>
     </div>
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Cause</th>
-                    <th>Time</th>
-                    <th>Location</th>
-                    <th>Actions</th>
+                    <th data-i18n="user">User</th>
+                    <th data-i18n="cause">Cause</th>
+                    <th data-i18n="time">Time</th>
+                    <th data-i18n="location">Location</th>
+                    <th data-i18n="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,15 +78,15 @@
                     <td><span class="admin-chip">{{ sig.emergency_causes or 'Not specified' }}</span></td>
                     <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
                     <td>
-                        <a href="https://maps.google.com/?q={{ sig.lat }},{{ sig.lng }}" target="_blank" class="admin-btn admin-btn-blue" style="text-decoration:none;display:inline-block;">📍 View Map</a>
+                        <a href="https://maps.google.com/?q={{ sig.lat }},{{ sig.lng }}" target="_blank" class="admin-btn admin-btn-blue" style="text-decoration:none;display:inline-block;" data-i18n="viewMap">📍 View Map</a>
                     </td>
                     <td>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <form method="POST" action="{{ url_for('admin_resolve_signal', signal_id=sig.id) }}" style="margin:0;">
-                                <button type="submit" class="admin-btn admin-btn-green">✅ Resolve</button>
+                                <button type="submit" class="admin-btn admin-btn-green" data-i18n="resolveBtn">✅ Resolve</button>
                             </form>
                             <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
-                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                                <button type="submit" class="admin-btn admin-btn-red" data-i18n="deleteBtn">🗑️ Delete</button>
                             </form>
                         </div>
                     </td>
@@ -95,7 +95,7 @@
                 <tr>
                     <td colspan="5" style="text-align:center;padding:40px;">
                         <div style="font-size:2rem;margin-bottom:8px;">✅</div>
-                        <div style="color:#6b7280;font-size:0.92rem;">No active signals right now</div>
+                        <div style="color:#6b7280;font-size:0.92rem;" data-i18n="noActiveSignals">No active signals right now</div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -104,12 +104,12 @@
     </div>
 </div>
 
-<!-- All Signals with search -->
+<!-- All Signals -->
 <div class="admin-section fade-up fade-up-3">
     <div class="admin-section-header">
-        <h5 class="fw-bold mb-0">📋 All Signals History</h5>
+        <h5 class="fw-bold mb-0" data-i18n="allSignalsHistory">📋 All Signals History</h5>
         <div style="display:flex;align-items:center;gap:12px;">
-            <input type="text" id="signal-search" placeholder="🔍 Search signals..." oninput="filterSignals()" class="admin-search-input">
+            <input type="text" id="signal-search" data-i18n="searchSignals" data-i18n-attr="placeholder" placeholder="🔍 Search signals..." oninput="filterSignals()" class="admin-search-input">
             <span class="admin-badge-gray">{{ stats.total_signals }} Total</span>
         </div>
     </div>
@@ -118,11 +118,11 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>User</th>
-                    <th>Cause</th>
-                    <th>Status</th>
-                    <th>Time</th>
-                    <th>Actions</th>
+                    <th data-i18n="user">User</th>
+                    <th data-i18n="cause">Cause</th>
+                    <th data-i18n="status">Status</th>
+                    <th data-i18n="time">Time</th>
+                    <th data-i18n="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -141,7 +141,7 @@
                     <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
-                            <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                            <button type="submit" class="admin-btn admin-btn-red" data-i18n="deleteBtn">🗑️ Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -151,25 +151,25 @@
     </div>
 </div>
 
-<!-- Users with search -->
+<!-- Users -->
 <div class="admin-section fade-up fade-up-4">
     <div class="admin-section-header">
-        <h5 class="fw-bold mb-0">👥 All Users</h5>
+        <h5 class="fw-bold mb-0" data-i18n="allUsers">👥 All Users</h5>
         <div style="display:flex;align-items:center;gap:12px;">
-            <input type="text" id="user-search" placeholder="🔍 Search users..." oninput="filterUsers()" class="admin-search-input">
-            <span class="admin-badge-gray">{{ stats.users }} Users</span>
+            <input type="text" id="user-search" data-i18n="searchUsers" data-i18n-attr="placeholder" placeholder="🔍 Search users..." oninput="filterUsers()" class="admin-search-input">
+            <span class="admin-badge-gray">{{ stats.users }} <span data-i18n="totalUsers">Users</span></span>
         </div>
     </div>
     <div class="table-responsive">
         <table class="admin-table" id="users-table">
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Signals</th>
-                    <th>Role</th>
-                    <th>Actions</th>
+                    <th data-i18n="user">User</th>
+                    <th data-i18n="email">Email</th>
+                    <th data-i18n="phone">Phone</th>
+                    <th data-i18n="signals">Signals</th>
+                    <th data-i18n="role">Role</th>
+                    <th data-i18n="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -199,19 +199,69 @@
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             {% if user.id != current_user.id %}
                             <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" style="margin:0;">
-                                <button type="submit" class="admin-btn admin-btn-blue">
+                                <button type="submit" class="admin-btn admin-btn-blue" data-i18n="{{ 'removeAdmin' if user.is_admin else 'makeAdmin' }}">
                                     {% if user.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
                                 </button>
                             </form>
                             {% endif %}
                             {% if not user.is_admin %}
                             <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="margin:0;" onsubmit="return confirm('Delete this user and all their signals?')">
-                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                                <button type="submit" class="admin-btn admin-btn-red" data-i18n="deleteBtn">🗑️ Delete</button>
                             </form>
                             {% endif %}
                         </div>
                     </td>
                 </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Vouchers -->
+<div class="admin-section fade-up mt-4">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0" data-i18n="shopVouchers">🎁 Shop Vouchers</h5>
+        <span class="admin-badge-gray">{{ vouchers|length }} Vouchers</span>
+    </div>
+
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+        <h6 class="fw-bold mb-3" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;" data-i18n="addNewVoucher">Add New Voucher</h6>
+        <form method="POST" action="{{ url_for('admin_add_voucher') }}" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" name="name" data-i18n="name" data-i18n-attr="placeholder" placeholder="Voucher name" required class="form-control" style="max-width:180px;">
+            <input type="text" name="description" data-i18n="description" data-i18n-attr="placeholder" placeholder="Description" class="form-control" style="max-width:200px;">
+            <input type="number" name="price" data-i18n="price" data-i18n-attr="placeholder" placeholder="Price (points)" required class="form-control" style="max-width:140px;">
+            <input type="text" name="promo_code" data-i18n="promoCode" data-i18n-attr="placeholder" placeholder="Promo code" required class="form-control" style="max-width:140px;">
+            <button type="submit" class="admin-btn admin-btn-green" style="padding:8px 16px;" data-i18n="addBtn">+ Add</button>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th data-i18n="name">Name</th>
+                    <th data-i18n="description">Description</th>
+                    <th data-i18n="price">Price</th>
+                    <th data-i18n="promoCode">Promo Code</th>
+                    <th data-i18n="actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vouchers %}
+                <tr>
+                    <td style="font-weight:600;">{{ v.name }}</td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ v.description }}</td>
+                    <td><span class="admin-chip">⭐ {{ v.price }}</span></td>
+                    <td style="font-family:monospace;font-size:0.85rem;">{{ v.promo_code }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_delete_voucher', voucher_id=v.id) }}" onsubmit="return confirm('Delete this voucher?')">
+                            <button type="submit" class="admin-btn admin-btn-red" data-i18n="deleteBtn">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center;color:#6b7280;padding:24px;" data-i18n="noVouchers">No vouchers yet</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -233,48 +283,5 @@ function filterUsers() {
     });
 }
 </script>
-
-
-<!-- Vouchers -->
-<div class="admin-section fade-up mt-4">
-    <div class="admin-section-header">
-        <h5 class="fw-bold mb-0">🎁 Shop Vouchers</h5>
-        <span class="admin-badge-gray">{{ vouchers|length }} Vouchers</span>
-    </div>
-
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
-        <h6 class="fw-bold mb-3" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;">Add New Voucher</h6>
-        <form method="POST" action="{{ url_for('admin_add_voucher') }}" style="display:flex;gap:10px;flex-wrap:wrap;">
-            <input type="text" name="name" placeholder="Voucher name" required class="form-control" style="max-width:180px;">
-            <input type="text" name="description" placeholder="Description" class="form-control" style="max-width:200px;">
-            <input type="number" name="price" placeholder="Price (points)" required class="form-control" style="max-width:140px;">
-            <input type="text" name="promo_code" placeholder="Promo code" required class="form-control" style="max-width:140px;">
-            <button type="submit" class="admin-btn admin-btn-green" style="padding:8px 16px;">+ Add</button>
-        </form>
-    </div>
-
-    <div class="table-responsive">
-        <table class="admin-table">
-            <thead><tr><th>Name</th><th>Description</th><th>Price</th><th>Promo Code</th><th>Actions</th></tr></thead>
-            <tbody>
-                {% for v in vouchers %}
-                <tr>
-                    <td style="font-weight:600;">{{ v.name }}</td>
-                    <td style="font-size:0.85rem;color:#6b7280;">{{ v.description }}</td>
-                    <td><span class="admin-chip">⭐ {{ v.price }}</span></td>
-                    <td style="font-family:monospace;font-size:0.85rem;">{{ v.promo_code }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('admin_delete_voucher', voucher_id=v.id) }}" onsubmit="return confirm('Delete this voucher?')">
-                            <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="5" style="text-align:center;color:#6b7280;padding:24px;">No vouchers yet</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 
 {% endblock %}

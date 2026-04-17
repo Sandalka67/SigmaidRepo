@@ -17,6 +17,27 @@
 <!-- Map with locate button -->
 <div style="position:relative;" class="mb-4 fade-up fade-up-1">
     <div id="map"></div>
+
+    <!-- No signals message -->
+    <div id="no-signals-msg" style="
+        display: none;
+        position: absolute;
+        bottom: 80px;        
+        left: 20px;           
+        background: white;
+        border-radius: 16px;
+        padding: 15px 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        text-align: center;
+        z-index: 500;
+        pointer-events: none;
+        border: 1px solid #eee;
+    ">
+        <div style="font-size:1.5rem;margin-bottom:4px;">✅</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#1a1a2e;">No active signals</div>
+        <div style="font-size:0.75rem;color:#6b7280;margin-top:2px;">All clear in Bulgaria</div>
+    </div>
+
     <button id="locate-btn" onclick="locateMe()" title="Center on my location" style="
         position: absolute;
         bottom: 16px;
