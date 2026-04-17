@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="mb-3 fade-up">
+    <a href="/" class="btn-back">
+        <span class="back-icon">←</span> <span data-i18n="backToHome">Back to Map</span>
+    </a>
+</div>
 <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 fade-up">
     <div class="page-heading">
         <h2>🛒 Reward Shop</h2>
@@ -12,8 +17,6 @@
         </div>
     </div>
 </div>
-
-<!-- User Stats -->
 <div class="row g-4 mb-5 fade-up fade-up-1">
     <div class="col-6 col-md-3">
         <div class="card-stat shadow-sm">
@@ -44,8 +47,6 @@
         </div>
     </div>
 </div>
-
-<!-- Flash messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
@@ -89,8 +90,6 @@
     </div>
     {% endif %}
 </div>
-
-<!-- How to earn points -->
 <div class="fade-up fade-up-3 mt-5">
     <h5 class="fw-bold mb-4" style="font-family:'Syne',sans-serif;">How to Earn Points</h5>
     <div class="row g-3">
