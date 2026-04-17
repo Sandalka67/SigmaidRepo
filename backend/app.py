@@ -2,7 +2,8 @@ import os
 import secrets
 import math
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from functools import wraps
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, abort
 from database.models import db, User, EmergencySignal
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
@@ -34,14 +35,38 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# ── ADMIN DECORATOR ──
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 with app.app_context():
     db.create_all()
 
+    # Create admin if not exists
+    if not User.query.filter_by(email="admin@signaid.com").first():
+        admin = User(
+            full_name="Admin",
+            email="admin@signaid.com",
+            is_admin=True
+        )
+        admin.set_password("admin1234")
+        db.session.add(admin)
+        db.session.commit()
+        print("\n" + "="*50)
+        print("ADMIN ACCOUNT CREATED:")
+        print("Email: admin@signaid.com")
+        print("Password: admin1234")
+        print("="*50 + "\n")
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     if None in [lat1, lon1, lat2, lon2]:
         return float('inf')
-    R = 6371.0 # Радиус на Земята в км
+    R = 6371.0
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
     a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * \
@@ -93,6 +118,8 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
             login_user(user)
+            if user.is_admin:
+                return redirect(url_for('admin_panel'))
             return redirect(url_for('index'))
         return "Invalid email or password.", 401
     return render_template('login.html')
@@ -125,9 +152,15 @@ def forgot_password():
             user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
             db.session.commit()
             reset_link = url_for('reset_password', token=token, _external=True)
-            msg = Message("Възстановяване на парола - Signaid", recipients=[email])
-            msg.body = f"Кликнете на линка, за да смените паролата си: {reset_link}"
-            mail.send(msg)
+            try:
+                msg = Message("Възстановяване на парола - Signaid", recipients=[email])
+                msg.body = f"Кликнете на линка, за да смените паролата си: {reset_link}"
+                mail.send(msg)
+            except Exception as e:
+                print(f"\n{'='*50}")
+                print(f"PASSWORD RESET LINK FOR {email}:")
+                print(f"{reset_link}")
+                print(f"{'='*50}\n")
         return render_template('forgot_password.html', sent=True)
     return render_template('forgot_password.html', sent=False)
 
@@ -144,7 +177,61 @@ def reset_password(token):
         return redirect(url_for('login'))
     return render_template('reset_password.html', invalid=False, token=token)
 
+# ── ADMIN ROUTES ──
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_panel():
+    users = User.query.all()
+    signals = EmergencySignal.query.order_by(EmergencySignal.timestamp.desc()).all()
+    stats = get_stats()
+    return render_template('admin.html', users=users, signals=signals, stats=stats)
 
+@app.route('/admin/delete-signal/<int:signal_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_signal(signal_id):
+    signal = EmergencySignal.query.get_or_404(signal_id)
+    db.session.delete(signal)
+    db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/resolve-signal/<int:signal_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_resolve_signal(signal_id):
+    signal = EmergencySignal.query.get_or_404(signal_id)
+    signal.is_active = False
+    db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.is_admin:
+        return "Cannot delete admin!", 403
+    EmergencySignal.query.filter_by(user_id=user_id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/toggle-admin/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_toggle_admin(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id != current_user.id:
+        user.is_admin = not user.is_admin
+        db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
+
+# ── API ──
 @app.route('/api/signal', methods=['POST'])
 @login_required
 def create_signal():
@@ -152,7 +239,7 @@ def create_signal():
     lat = data.get('lat')
     lng = data.get('lng')
     conditions = data.get('conditions', 'Спешен случай')
-    
+
     new_signal = EmergencySignal(
         user_id=current_user.id,
         lat=lat,
@@ -163,30 +250,29 @@ def create_signal():
     )
     db.session.add(new_signal)
     db.session.commit()
+
     all_users = User.query.filter(User.id != current_user.id).all()
     recipients = []
-    
     for u in all_users:
         dist = calculate_distance(lat, lng, getattr(u, 'last_lat', None), getattr(u, 'last_lng', None))
         if dist <= 10.0 or dist == float('inf'):
             if u.email:
                 recipients.append(u.email)
-    
+
     if recipients:
         try:
             msg = Message(subject=f"🚨 SOS БЛИЗО ДО ВАС: {conditions}!", bcc=recipients)
             signaid_link = url_for('map_view', _external=True)
             google_maps_link = f"https://www.google.com/maps?q={lat},{lng}"
-            
             msg.body = f"""
-            ВНИМАНИЕ! Регистриран е сигнал за помощ близо до вас.
-            
-            ОТ: {current_user.full_name}
-            ТИП: {conditions}
-            БЕЛЕЖКИ: {data.get('notes', 'Няма')}
-            
-            📍 Виж в Signaid: {signaid_link}
-            🌍 Отвори в Google Maps: {google_maps_link}
+ВНИМАНИЕ! Регистриран е сигнал за помощ близо до вас.
+
+ОТ: {current_user.full_name}
+ТИП: {conditions}
+БЕЛЕЖКИ: {data.get('notes', 'Няма')}
+
+📍 Виж в Signaid: {signaid_link}
+🌍 Отвори в Google Maps: {google_maps_link}
             """
             mail.send(msg)
         except Exception as e:
@@ -210,8 +296,12 @@ def get_signals():
         "lat": sig.lat, "lng": sig.lng,
         "user_name": sig.user.full_name if sig.user else 'Unknown',
         "phone": sig.user.phone if sig.user else 'N/A',
-        "causes": sig.emergency_causes,
-        "details": sig.extra_details
+        "email": sig.user.email if sig.user else 'N/A',
+        "user_health": sig.user.health_conditions if sig.user and sig.user.health_conditions else 'None',
+        "user_notes": sig.user.notes if sig.user and sig.user.notes else 'None',
+        "causes": sig.emergency_causes if sig.emergency_causes else 'Not specified',
+        "details": sig.extra_details if sig.extra_details else 'None',
+        "timestamp": sig.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ') if sig.timestamp else None
     } for sig in active_signals]
     return jsonify(signal_data)
 
