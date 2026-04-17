@@ -14,6 +14,12 @@ class User(UserMixin, db.Model):
     notes = db.Column(db.Text)
     last_lng = db.Column(db.Float)
     last_lat = db.Column(db.Float)
+    
+    # Геймификация
+    points = db.Column(db.Integer, default=0)
+    xp = db.Column(db.Integer, default=0)
+    level = db.Column(db.Integer, default=1)
+    
     password_hash = db.Column(db.String(256))
     is_admin = db.Column(db.Boolean, default=False)
     reset_token = db.Column(db.String(100), nullable=True)
@@ -34,5 +40,11 @@ class EmergencySignal(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     emergency_causes = db.Column(db.Text)
     extra_details = db.Column(db.Text)
-
     user = db.relationship('User', backref='signals')
+
+class Voucher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200))
+    price = db.Column(db.Integer, nullable=False)
+    promo_code = db.Column(db.String(50), unique=True)
