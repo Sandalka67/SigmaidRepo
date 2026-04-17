@@ -3,10 +3,11 @@ import secrets
 import math
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from database.models import db, User, EmergencySignal
+from database.models import db, User, EmergencySignal, Voucher
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = Flask(__name__,
@@ -36,18 +37,19 @@ def load_user(user_id):
 
 with app.app_context():
     db.create_all()
-
+    if not Voucher.query.first():
+        v1 = Voucher(name="Безплатно Кафе", description="Важи за обекти на PartnerCafe", price=50, promo_code="COFFEE2024")
+        v2 = Voucher(name="-10% в Аптеката", description="Отстъпка за лекарства без рецепта", price=150, promo_code="HEALTH10")
+        v3 = Voucher(name="Пакет Първа Помощ", description="Безплатен бинт и марли", price=300, promo_code="SAFEKIT")
+        db.session.add_all([v1, v2, v3])
+        db.session.commit()
 
 def calculate_distance(lat1, lon1, lat2, lon2):
-    if None in [lat1, lon1, lat2, lon2]:
-        return float('inf')
-    R = 6371.0 # Радиус на Земята в км
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * \
-        math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c
+    if None in [lat1, lon1, lat2, lon2]: return float('inf')
+    R = 6371.0 
+    dlat, dlon = math.radians(lat2-lat1), math.radians(lon2-lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    return R * (2 * math.atan2(math.sqrt(a), math.sqrt(1-a)))
 
 def get_stats():
     return {
@@ -57,6 +59,7 @@ def get_stats():
         "resolved": EmergencySignal.query.filter_by(is_active=False).count()
     }
 
+# МАРШРУТИ
 @app.route('/')
 @login_required
 def index():
@@ -64,21 +67,13 @@ def index():
     active_event = EmergencySignal.query.filter_by(user_id=current_user.id, is_active=True).first()
     return render_template('index.html', stats=stats, has_active=bool(active_event))
 
-@app.route('/map')
-@login_required
-def map_view():
-    return render_template('map.html')
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form.get('email')
-        password = request.form.get('password')
-        full_name = request.form.get('full_name')
-        if User.query.filter_by(email=email).first():
-            return "Email already registered!", 400
-        new_user = User(email=email, full_name=full_name)
-        new_user.set_password(password)
+        if User.query.filter_by(email=email).first(): return "Email already registered!", 400
+        new_user = User(email=email, full_name=request.form.get('full_name'), points=50, xp=50)
+        new_user.set_password(request.form.get('password'))
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
@@ -88,10 +83,8 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
+        user = User.query.filter_by(email=request.form.get('email')).first()
+        if user and user.check_password(request.form.get('password')):
             login_user(user)
             return redirect(url_for('index'))
         return "Invalid email or password.", 401
@@ -111,9 +104,7 @@ def profile():
         current_user.health_conditions = request.form.get('health_conditions')
         current_user.notes = request.form.get('notes')
         db.session.commit()
-        return redirect(url_for('profile'))
     return render_template('profile.html')
-
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
