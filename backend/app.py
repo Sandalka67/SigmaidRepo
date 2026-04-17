@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, abort
-from database.models import db, User, EmergencySignal
+from database.models import db, User, EmergencySignal, Voucher
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -36,7 +36,6 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ── ADMIN DECORATOR ──
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -48,21 +47,26 @@ def admin_required(f):
 with app.app_context():
     db.create_all()
 
-    # Create admin if not exists
     if not User.query.filter_by(email="admin@signaid.com").first():
-        admin = User(
-            full_name="Admin",
-            email="admin@signaid.com",
-            is_admin=True
-        )
+        admin = User(full_name="Admin", email="admin@signaid.com", is_admin=True)
         admin.set_password("admin1234")
         db.session.add(admin)
         db.session.commit()
-        print("\n" + "="*50)
-        print("ADMIN ACCOUNT CREATED:")
-        print("Email: admin@signaid.com")
-        print("Password: admin1234")
-        print("="*50 + "\n")
+        print("\nADMIN CREATED: admin@signaid.com / admin1234\n")
+
+    # Seed default vouchers
+    if Voucher.query.count() == 0:
+        vouchers = [
+            Voucher(name="Coffee Voucher ☕", description="Free coffee at partner cafes", price=100, promo_code="COFFEE100"),
+            Voucher(name="10% Pharmacy Discount 💊", description="10% off at partner pharmacies", price=200, promo_code="PHARMA10"),
+            Voucher(name="Free First Aid Kit 🩺", description="Claim a free first aid kit", price=500, promo_code="AID500"),
+            Voucher(name="Mountain Rescue Donation 🏔️", description="Donate to mountain rescue teams", price=150, promo_code="RESCUE150"),
+            Voucher(name="Red Cross Donation ❤️", description="Support the Bulgarian Red Cross", price=300, promo_code="REDCROSS300"),
+            Voucher(name="Premium Badge 🏅", description="Exclusive premium badge on your profile", price=250, promo_code="BADGE250"),
+        ]
+        for v in vouchers:
+            db.session.add(v)
+        db.session.commit()
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     if None in [lat1, lon1, lat2, lon2]:
@@ -83,7 +87,6 @@ def get_stats():
         "resolved": EmergencySignal.query.filter_by(is_active=False).count()
     }
 
-# МАРШРУТИ
 @app.route('/')
 @login_required
 def index():
@@ -91,11 +94,30 @@ def index():
     active_event = EmergencySignal.query.filter_by(user_id=current_user.id, is_active=True).first()
     return render_template('index.html', stats=stats, has_active=bool(active_event))
 
+@app.route('/shop')
+@login_required
+def shop():
+    vouchers = Voucher.query.all()
+    return render_template('shop.html', vouchers=vouchers)
+
+@app.route('/shop/buy/<int:voucher_id>', methods=['POST'])
+@login_required
+def buy_voucher(voucher_id):
+    voucher = Voucher.query.get_or_404(voucher_id)
+    if current_user.points < voucher.price:
+        flash('Not enough points!', 'danger')
+        return redirect(url_for('shop'))
+    current_user.points -= voucher.price
+    db.session.commit()
+    flash(f'🎉 Successfully redeemed "{voucher.name}"! Your promo code: {voucher.promo_code}', 'success')
+    return redirect(url_for('shop'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form.get('email')
-        if User.query.filter_by(email=email).first(): return "Email already registered!", 400
+        if User.query.filter_by(email=email).first():
+            return "Email already registered!", 400
         new_user = User(email=email, full_name=request.form.get('full_name'), points=50, xp=50)
         new_user.set_password(request.form.get('password'))
         db.session.add(new_user)
@@ -131,6 +153,7 @@ def profile():
         current_user.notes = request.form.get('notes')
         db.session.commit()
     return render_template('profile.html')
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -147,10 +170,7 @@ def forgot_password():
                 msg.body = f"Кликнете на линка, за да смените паролата си: {reset_link}"
                 mail.send(msg)
             except Exception as e:
-                print(f"\n{'='*50}")
-                print(f"PASSWORD RESET LINK FOR {email}:")
-                print(f"{reset_link}")
-                print(f"{'='*50}\n")
+                print(f"\n{'='*50}\nPASSWORD RESET LINK FOR {email}:\n{reset_link}\n{'='*50}\n")
         return render_template('forgot_password.html', sent=True)
     return render_template('forgot_password.html', sent=False)
 
@@ -167,15 +187,39 @@ def reset_password(token):
         return redirect(url_for('login'))
     return render_template('reset_password.html', invalid=False, token=token)
 
-# ── ADMIN ROUTES ──
+# ── ADMIN ──
 @app.route('/admin')
 @login_required
 @admin_required
 def admin_panel():
     users = User.query.all()
     signals = EmergencySignal.query.order_by(EmergencySignal.timestamp.desc()).all()
+    vouchers = Voucher.query.all()
     stats = get_stats()
-    return render_template('admin.html', users=users, signals=signals, stats=stats)
+    return render_template('admin.html', users=users, signals=signals, stats=stats, vouchers=vouchers)
+
+@app.route('/admin/add-voucher', methods=['POST'])
+@login_required
+@admin_required
+def admin_add_voucher():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    price = request.form.get('price')
+    promo_code = request.form.get('promo_code')
+    if name and price and promo_code:
+        voucher = Voucher(name=name, description=description, price=int(price), promo_code=promo_code)
+        db.session.add(voucher)
+        db.session.commit()
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/delete-voucher/<int:voucher_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_voucher(voucher_id):
+    voucher = Voucher.query.get_or_404(voucher_id)
+    db.session.delete(voucher)
+    db.session.commit()
+    return redirect(url_for('admin_panel'))
 
 @app.route('/admin/delete-signal/<int:signal_id>', methods=['POST'])
 @login_required
@@ -231,14 +275,15 @@ def create_signal():
     conditions = data.get('conditions', 'Спешен случай')
 
     new_signal = EmergencySignal(
-        user_id=current_user.id,
-        lat=lat,
-        lng=lng,
-        is_active=True,
-        emergency_causes=conditions,
+        user_id=current_user.id, lat=lat, lng=lng,
+        is_active=True, emergency_causes=conditions,
         extra_details=data.get('notes', '')
     )
     db.session.add(new_signal)
+
+    # Award points
+    current_user.points = (current_user.points or 0) + 50
+    current_user.xp = (current_user.xp or 0) + 50
     db.session.commit()
 
     all_users = User.query.filter(User.id != current_user.id).all()
@@ -252,18 +297,8 @@ def create_signal():
     if recipients:
         try:
             msg = Message(subject=f"🚨 SOS БЛИЗО ДО ВАС: {conditions}!", bcc=recipients)
-            signaid_link = url_for('map_view', _external=True)
             google_maps_link = f"https://www.google.com/maps?q={lat},{lng}"
-            msg.body = f"""
-ВНИМАНИЕ! Регистриран е сигнал за помощ близо до вас.
-
-ОТ: {current_user.full_name}
-ТИП: {conditions}
-БЕЛЕЖКИ: {data.get('notes', 'Няма')}
-
-📍 Виж в Signaid: {signaid_link}
-🌍 Отвори в Google Maps: {google_maps_link}
-            """
+            msg.body = f"ВНИМАНИЕ!\nОТ: {current_user.full_name}\nТИП: {conditions}\n🌍 {google_maps_link}"
             mail.send(msg)
         except Exception as e:
             print(f"Имейл грешка: {e}")
@@ -276,6 +311,8 @@ def resolve_signal():
     active_signal = EmergencySignal.query.filter_by(user_id=current_user.id, is_active=True).first()
     if active_signal:
         active_signal.is_active = False
+        current_user.points = (current_user.points or 0) + 30
+        current_user.xp = (current_user.xp or 0) + 30
         db.session.commit()
     return jsonify({"status": "resolved", "stats": get_stats()})
 

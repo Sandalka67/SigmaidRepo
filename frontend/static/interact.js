@@ -106,6 +106,10 @@ window.refreshMarkers = function () {
     fetch('/api/signals?t=' + new Date().getTime())
         .then(res => res.json())
         .then(signals => {
+            // Show/hide no signals message
+            const msg = document.getElementById('no-signals-msg');
+            if (msg) msg.style.display = signals.length === 0 ? 'block' : 'none';
+
             signals.forEach(signal => {
                 if (signal.lat && signal.lng) {
                     const icon = getEmergencyIcon(signal.causes);

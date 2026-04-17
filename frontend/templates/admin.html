@@ -3,219 +3,277 @@
 
 <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 fade-up">
     <div class="page-heading">
-        <h2 class="text-white fw-bold mb-1">🛡️ Admin Panel</h2>
-        <p class="mb-0 text-muted">Manage users and emergency signals</p>
+        <h2>🛡️ Admin Panel</h2>
+        <p class="mb-0">Manage users and emergency signals</p>
     </div>
-    <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 8px 16px; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-        Admin Access
-    </span>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <span style="background:#ffeaec;color:#e82a3d;padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Admin Access</span>
+        <a href="{{ url_for('index') }}" style="font-size:0.88rem;color:#6b7280;text-decoration:none;font-weight:500;">← Back to Map</a>
+    </div>
 </div>
 
+<!-- Stats -->
 <div class="row g-4 text-center mb-5 fade-up fade-up-1">
     <div class="col-6 col-md-3">
-        <div class="card shadow-sm h-100 py-3" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-            <div class="mb-2"><span style="background: rgba(59, 130, 246, 0.15); padding: 10px; border-radius: 10px; font-size: 1.2rem;">👥</span></div>
-            <h3 class="fw-bold text-white mb-0">{{ stats.users }}</h3>
-            <p class="text-muted mb-0" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Users</p>
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">👥</span></div>
+            <h3 class="fw-bold">{{ stats.users }}</h3>
+            <p>Total Users</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card shadow-sm h-100 py-3" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-            <div class="mb-2"><span style="background: rgba(245, 158, 11, 0.15); padding: 10px; border-radius: 10px; font-size: 1.2rem;">⚠️</span></div>
-            <h3 class="fw-bold text-white mb-0">{{ stats.total_signals }}</h3>
-            <p class="text-muted mb-0" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Signals</p>
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">⚠️</span></div>
+            <h3 class="fw-bold">{{ stats.total_signals }}</h3>
+            <p>Total Signals</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card shadow-sm h-100 py-3" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-            <div class="mb-2"><span style="background: rgba(239, 68, 68, 0.15); padding: 10px; border-radius: 10px; font-size: 1.2rem;">📈</span></div>
-            <h3 class="fw-bold mb-0" style="color: #ef4444;">{{ stats.active_signals }}</h3>
-            <p class="text-muted mb-0" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Active Signals</p>
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">📈</span></div>
+            <h3 class="fw-bold text-danger">{{ stats.active_signals }}</h3>
+            <p>Active Signals</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card shadow-sm h-100 py-3" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-            <div class="mb-2"><span style="background: rgba(16, 185, 129, 0.15); padding: 10px; border-radius: 10px; font-size: 1.2rem;">🛡️</span></div>
-            <h3 class="fw-bold text-white mb-0">{{ stats.resolved }}</h3>
-            <p class="text-muted mb-0" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Resolved</p>
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">🛡️</span></div>
+            <h3 class="fw-bold">{{ stats.resolved }}</h3>
+            <p>Resolved</p>
         </div>
     </div>
 </div>
 
-<div class="admin-section fade-up fade-up-2 mb-4">
-    <div class="card shadow-sm" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-        <div class="card-header border-bottom-0 pt-4 pb-2" style="background-color: transparent;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
-                    <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 35px; height: 35px; display:flex; align-items:center; justify-content:center; font-size: 1.1rem; border-radius: 10px;">🚨</span> 
-                    Active Emergency Signals
-                </h5>
-                <span class="badge" style="background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;">{{ stats.active_signals }} Active</span>
-            </div>
+<!-- Active Signals -->
+<div class="admin-section fade-up fade-up-2">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">🚨 Active Emergency Signals</h5>
+        <span class="admin-badge-red">{{ stats.active_signals }} Active</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Cause</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sig in signals if sig.is_active %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="admin-avatar-red">
+                                {{ (sig.user.full_name[0] if sig.user else 'U').upper() }}
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.92rem;">{{ sig.user.full_name if sig.user else 'Unknown' }}</div>
+                                <div style="font-size:0.78rem;color:#6b7280;">{{ sig.user.email if sig.user else 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="admin-chip">{{ sig.emergency_causes or 'Not specified' }}</span></td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
+                    <td>
+                        <a href="https://maps.google.com/?q={{ sig.lat }},{{ sig.lng }}" target="_blank" class="admin-btn admin-btn-blue" style="text-decoration:none;display:inline-block;">📍 View Map</a>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <form method="POST" action="{{ url_for('admin_resolve_signal', signal_id=sig.id) }}" style="margin:0;">
+                                <button type="submit" class="admin-btn admin-btn-green">✅ Resolve</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
+                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:40px;">
+                        <div style="font-size:2rem;margin-bottom:8px;">✅</div>
+                        <div style="color:#6b7280;font-size:0.92rem;">No active signals right now</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- All Signals with search -->
+<div class="admin-section fade-up fade-up-3">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">📋 All Signals History</h5>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <input type="text" id="signal-search" placeholder="🔍 Search signals..." oninput="filterSignals()" class="admin-search-input">
+            <span class="admin-badge-gray">{{ stats.total_signals }} Total</span>
         </div>
-        <div class="card-body pt-0">
-            <div class="table-responsive mt-3">
-                <table class="table table-hover align-middle mb-0 text-white">
-                    <thead style="border-bottom: 2px solid var(--border, #2b2b40);">
-                        <tr>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">User</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Cause</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Time</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</th>
-                            <th class="border-0 text-muted fw-semibold pb-3 text-end" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody style="border-top: none;">
-                        {% for sig in signals if sig.is_active %}
-                        <tr style="border-bottom: 1px solid var(--border, #2b2b40);">
-                            <td class="py-3">
-                                <div class="d-flex flex-column">
-                                    <span class="fw-bold">{{ sig.user.full_name if sig.user else 'Unknown' }}</span>
-                                    <span class="text-muted" style="font-size: 0.8rem;">{{ sig.user.email if sig.user else 'N/A' }}</span>
-                                </div>
-                            </td>
-                            <td class="py-3"><span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 6px 10px; border-radius: 6px;">{{ sig.emergency_causes or 'Not specified' }}</span></td>
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
-                            <td class="py-3">
-                                <a href="http://maps.google.com/maps?q={{ sig.lat }},{{ sig.lng }}" target="_blank" class="text-decoration-none d-inline-flex align-items-center gap-1" style="color: #ef4444; font-size: 0.9rem; font-weight: 600;">
-                                    📍 View Map
-                                </a>
-                            </td>
-                            <td class="py-3 text-end">
-                                <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                    <form method="POST" action="{{ url_for('admin_resolve_signal', signal_id=sig.id) }}" style="margin:0;">
-                                        <button type="submit" class="btn btn-sm" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-weight: 600;">✅ Resolve</button>
-                                    </form>
-                                    <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
-                                        <button type="submit" class="btn btn-sm" style="background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-weight: 600;">🗑️ Delete</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table" id="signals-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Cause</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sig in signals %}
+                <tr class="signal-row">
+                    <td style="color:#6b7280;font-size:0.85rem;">#{{ sig.id }}</td>
+                    <td style="font-weight:500;">{{ sig.user.full_name if sig.user else 'Unknown' }}</td>
+                    <td><span class="admin-chip">{{ sig.emergency_causes or 'N/A' }}</span></td>
+                    <td>
+                        {% if sig.is_active %}
+                        <span class="admin-badge-red">● Active</span>
                         {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No active signals at the moment.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        <span class="admin-badge-green">✓ Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
+                            <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div class="admin-section fade-up fade-up-3 mb-4">
-    <div class="card shadow-sm" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-        <div class="card-header border-bottom-0 pt-4 pb-2" style="background-color: transparent;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
-                    <span style="background: rgba(161, 165, 183, 0.15); color: #a1a5b7; width: 35px; height: 35px; display:flex; align-items:center; justify-content:center; font-size: 1.1rem; border-radius: 10px;">📋</span> 
-                    All Signals History
-                </h5>
-                <span class="badge" style="background-color: rgba(161, 165, 183, 0.15); color: #a1a5b7; border: 1px solid rgba(161, 165, 183, 0.3); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;">{{ stats.total_signals }} Total</span>
-            </div>
+<!-- Users with search -->
+<div class="admin-section fade-up fade-up-4">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">👥 All Users</h5>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <input type="text" id="user-search" placeholder="🔍 Search users..." oninput="filterUsers()" class="admin-search-input">
+            <span class="admin-badge-gray">{{ stats.users }} Users</span>
         </div>
-        <div class="card-body pt-0">
-            <div class="table-responsive mt-3">
-                <table class="table table-hover align-middle mb-0 text-white">
-                    <thead style="border-bottom: 2px solid var(--border, #2b2b40);">
-                        <tr>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">ID</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">User</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Cause</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Time</th>
-                            <th class="border-0 text-muted fw-semibold pb-3 text-end" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody style="border-top: none;">
-                        {% for sig in signals %}
-                        <tr style="border-bottom: 1px solid var(--border, #2b2b40);">
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">#{{ sig.id }}</td>
-                            <td class="py-3 fw-bold">{{ sig.user.full_name if sig.user else 'Unknown' }}</td>
-                            <td class="py-3"><span class="text-muted" style="font-size: 0.9rem;">{{ sig.emergency_causes or 'N/A' }}</span></td>
-                            <td class="py-3">
-                                {% if sig.is_active %}
-                                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 5px 8px; border-radius: 6px;">Active</span>
-                                {% else %}
-                                    <span class="badge" style="background-color: rgba(16, 185, 129, 0.2); color: #10b981; padding: 5px 8px; border-radius: 6px;">Resolved</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
-                            <td class="py-3 text-end">
-                                <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
-                                    <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0" title="Delete">🗑️ Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table" id="users-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Signals</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="user-row">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="{% if user.is_admin %}admin-avatar-red{% else %}admin-avatar-gray{% endif %}">
+                                {{ user.full_name[0].upper() }}
+                            </div>
+                            <div style="font-weight:600;font-size:0.92rem;">{{ user.full_name }}</div>
+                        </div>
+                    </td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ user.email }}</td>
+                    <td style="font-size:0.88rem;">{{ user.phone or '—' }}</td>
+                    <td>
+                        <span style="background:#f0f2f8;padding:2px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;">{{ user.signals|length }}</span>
+                    </td>
+                    <td>
+                        {% if user.is_admin %}
+                        <span class="admin-badge-red">🛡️ Admin</span>
+                        {% else %}
+                        <span class="admin-badge-gray">👤 User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            {% if user.id != current_user.id %}
+                            <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" style="margin:0;">
+                                <button type="submit" class="admin-btn admin-btn-blue">
+                                    {% if user.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if not user.is_admin %}
+                            <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="margin:0;" onsubmit="return confirm('Delete this user and all their signals?')">
+                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div class="admin-section fade-up fade-up-4 mb-4">
-    <div class="card shadow-sm" style="background-color: var(--bg-light, #1e1e2d); border: 1px solid var(--border, #2b2b40); border-radius: 14px;">
-        <div class="card-header border-bottom-0 pt-4 pb-2" style="background-color: transparent;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="fw-bold mb-0 text-white d-flex align-items-center gap-2">
-                    <span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; width: 35px; height: 35px; display:flex; align-items:center; justify-content:center; font-size: 1.1rem; border-radius: 10px;">👥</span> 
-                    All Users
-                </h5>
-                <span class="badge" style="background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;">{{ stats.users }} Users</span>
-            </div>
-        </div>
-        <div class="card-body pt-0">
-            <div class="table-responsive mt-3">
-                <table class="table table-hover align-middle mb-0 text-white">
-                    <thead style="border-bottom: 2px solid var(--border, #2b2b40);">
-                        <tr>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Email</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Phone</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Signals</th>
-                            <th class="border-0 text-muted fw-semibold pb-3" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Role</th>
-                            <th class="border-0 text-muted fw-semibold pb-3 text-end" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody style="border-top: none;">
-                        {% for user in users %}
-                        <tr style="border-bottom: 1px solid var(--border, #2b2b40);">
-                            <td class="py-3 fw-bold">{{ user.full_name }}</td>
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">{{ user.email }}</td>
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">{{ user.phone or '—' }}</td>
-                            <td class="py-3 text-muted" style="font-size: 0.9rem;">{{ user.signals|length }}</td>
-                            <td class="py-3">
-                                {% if user.is_admin %}
-                                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 5px 8px; border-radius: 6px;">Admin</span>
-                                {% else %}
-                                    <span class="badge" style="background-color: rgba(161, 165, 183, 0.2); color: #a1a5b7; padding: 5px 8px; border-radius: 6px;">User</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 text-end">
-                                <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                    {% if not user.is_admin or user.id != current_user.id %}
-                                    <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" style="margin:0;">
-                                        <button type="submit" class="btn btn-sm" style="background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; font-weight: 600;">
-                                            {% if user.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                    {% if not user.is_admin %}
-                                    <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="margin:0;" onsubmit="return confirm('Delete user {{ user.full_name }}? This will also delete all their signals!')">
-                                        <button type="submit" class="btn btn-sm" style="background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-weight: 600;">🗑️ Delete</button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<script>
+function filterSignals() {
+    const q = document.getElementById('signal-search').value.toLowerCase();
+    document.querySelectorAll('.signal-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+
+function filterUsers() {
+    const q = document.getElementById('user-search').value.toLowerCase();
+    document.querySelectorAll('.user-row').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+
+
+<!-- Vouchers -->
+<div class="admin-section fade-up mt-4">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">🎁 Shop Vouchers</h5>
+        <span class="admin-badge-gray">{{ vouchers|length }} Vouchers</span>
+    </div>
+
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+        <h6 class="fw-bold mb-3" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;">Add New Voucher</h6>
+        <form method="POST" action="{{ url_for('admin_add_voucher') }}" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" name="name" placeholder="Voucher name" required class="form-control" style="max-width:180px;">
+            <input type="text" name="description" placeholder="Description" class="form-control" style="max-width:200px;">
+            <input type="number" name="price" placeholder="Price (points)" required class="form-control" style="max-width:140px;">
+            <input type="text" name="promo_code" placeholder="Promo code" required class="form-control" style="max-width:140px;">
+            <button type="submit" class="admin-btn admin-btn-green" style="padding:8px 16px;">+ Add</button>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead><tr><th>Name</th><th>Description</th><th>Price</th><th>Promo Code</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for v in vouchers %}
+                <tr>
+                    <td style="font-weight:600;">{{ v.name }}</td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ v.description }}</td>
+                    <td><span class="admin-chip">⭐ {{ v.price }}</span></td>
+                    <td style="font-family:monospace;font-size:0.85rem;">{{ v.promo_code }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_delete_voucher', voucher_id=v.id) }}" onsubmit="return confirm('Delete this voucher?')">
+                            <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center;color:#6b7280;padding:24px;">No vouchers yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
