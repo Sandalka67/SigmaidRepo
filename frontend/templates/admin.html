@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 fade-up">
+    <div class="page-heading">
+        <h2>🛡️ Admin Panel</h2>
+        <p class="mb-0">Manage users and emergency signals</p>
+    </div>
+    <span style="background:#ffeaec;color:#e82a3d;padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Admin Access</span>
+</div>
+
+<!-- Stats -->
+<div class="row g-4 text-center mb-5 fade-up fade-up-1">
+    <div class="col-6 col-md-3">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">👥</span></div>
+            <h3 class="fw-bold">{{ stats.users }}</h3>
+            <p>Total Users</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">⚠️</span></div>
+            <h3 class="fw-bold">{{ stats.total_signals }}</h3>
+            <p>Total Signals</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">📈</span></div>
+            <h3 class="fw-bold text-danger">{{ stats.active_signals }}</h3>
+            <p>Active Signals</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card-stat shadow-sm">
+            <div><span class="stat-icon">🛡️</span></div>
+            <h3 class="fw-bold">{{ stats.resolved }}</h3>
+            <p>Resolved</p>
+        </div>
+    </div>
+</div>
+
+<!-- Active Signals -->
+<div class="admin-section fade-up fade-up-2">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">🚨 Active Emergency Signals</h5>
+        <span class="admin-badge-red">{{ stats.active_signals }} Active</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Cause</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sig in signals if sig.is_active %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">{{ sig.user.full_name if sig.user else 'Unknown' }}</div>
+                        <div style="font-size:0.8rem;color:#6b7280;">{{ sig.user.email if sig.user else 'N/A' }}</div>
+                    </td>
+                    <td><span class="admin-chip">{{ sig.emergency_causes or 'Not specified' }}</span></td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
+                    <td>
+                        <a href="https://maps.google.com/?q={{ sig.lat }},{{ sig.lng }}" target="_blank" style="font-size:0.85rem;color:#e82a3d;text-decoration:none;">📍 View</a>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <form method="POST" action="{{ url_for('admin_resolve_signal', signal_id=sig.id) }}" style="margin:0;">
+                                <button type="submit" class="admin-btn admin-btn-green">✅ Resolve</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
+                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center;color:#6b7280;padding:24px;">No active signals</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- All Signals -->
+<div class="admin-section fade-up fade-up-3">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">📋 All Signals History</h5>
+        <span class="admin-badge-gray">{{ stats.total_signals }} Total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Cause</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sig in signals %}
+                <tr>
+                    <td style="color:#6b7280;font-size:0.85rem;">#{{ sig.id }}</td>
+                    <td>{{ sig.user.full_name if sig.user else 'Unknown' }}</td>
+                    <td><span class="admin-chip">{{ sig.emergency_causes or 'N/A' }}</span></td>
+                    <td>
+                        {% if sig.is_active %}
+                        <span class="admin-badge-red">Active</span>
+                        {% else %}
+                        <span class="admin-badge-green">Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.85rem;color:#6b7280;">{{ sig.timestamp.strftime('%Y-%m-%d %H:%M') if sig.timestamp else 'N/A' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_delete_signal', signal_id=sig.id) }}" style="margin:0;" onsubmit="return confirm('Delete this signal?')">
+                            <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Users -->
+<div class="admin-section fade-up fade-up-4">
+    <div class="admin-section-header">
+        <h5 class="fw-bold mb-0">👥 All Users</h5>
+        <span class="admin-badge-gray">{{ stats.users }} Users</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Signals</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td style="font-weight:600;">{{ user.full_name }}</td>
+                    <td style="font-size:0.88rem;color:#6b7280;">{{ user.email }}</td>
+                    <td style="font-size:0.88rem;">{{ user.phone or '—' }}</td>
+                    <td style="font-size:0.88rem;">{{ user.signals|length }}</td>
+                    <td>
+                        {% if user.is_admin %}
+                        <span class="admin-badge-red">Admin</span>
+                        {% else %}
+                        <span class="admin-badge-gray">User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            {% if not user.is_admin or user.id != current_user.id %}
+                            <form method="POST" action="{{ url_for('admin_toggle_admin', user_id=user.id) }}" style="margin:0;">
+                                <button type="submit" class="admin-btn admin-btn-blue">
+                                    {% if user.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if not user.is_admin %}
+                            <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="margin:0;" onsubmit="return confirm('Delete user {{ user.full_name }}? This will also delete all their signals!')">
+                                <button type="submit" class="admin-btn admin-btn-red">🗑️ Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
