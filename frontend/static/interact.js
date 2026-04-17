@@ -1,6 +1,6 @@
 function getTimeAgo(timestamp) {
     if (!timestamp) return null;
-    const now = new Date(new Date(). toISOString());
+    const now = new Date(new Date().toISOString());
     const then = new Date(timestamp);
     const diffMs = now - then;
     const diffMin = Math.floor(diffMs / 60000);
@@ -20,14 +20,44 @@ function getUrgencyColor(timestamp) {
     return '#6b7280';
 }
 
+function getEmergencyIcon(causes) {
+    if (!causes) return '🚨';
+    const c = causes.toLowerCase();
+    if (c.includes('wildfire') || c.includes('fire') || c.includes('пожар')) return '🔥';
+    if (c.includes('flood') || c.includes('наводнение')) return '🌊';
+    if (c.includes('car') || c.includes('accident') || c.includes('катастрофа')) return '🚗';
+    if (c.includes('health') || c.includes('здрав')) return '❤️';
+    if (c.includes('earthquake') || c.includes('земетресение')) return '🌍';
+    if (c.includes('animal') || c.includes('животно')) return '🐾';
+    if (c.includes('lost') || c.includes('stranded') || c.includes('изгубен')) return '🗺️';
+    if (c.includes('injury') || c.includes('травма')) return '🩹';
+    if (c.includes('poison') || c.includes('отравяне')) return '☠️';
+    if (c.includes('drown') || c.includes('удавяне')) return '🏊';
+    if (c.includes('landslide') || c.includes('свлачище')) return '⛰️';
+    if (c.includes('power') || c.includes('ток')) return '⚡';
+    return '🚨';
+}
+
+function getMarkerColor(causes) {
+    if (!causes) return '#e82a3d';
+    const c = causes.toLowerCase();
+    if (c.includes('wildfire') || c.includes('fire')) return '#f97316';
+    if (c.includes('flood')) return '#3b82f6';
+    if (c.includes('earthquake')) return '#8b5cf6';
+    if (c.includes('health')) return '#e82a3d';
+    return '#e82a3d';
+}
+
 function buildPopupMessage(signal) {
     const timeAgo = getTimeAgo(signal.timestamp);
     const urgencyColor = getUrgencyColor(signal.timestamp);
+    const icon = getEmergencyIcon(signal.causes);
+    const markerColor = getMarkerColor(signal.causes);
 
     return `
     <div style="font-family:'DM Sans',Arial,sans-serif;min-width:280px;max-width:320px;border-radius:16px;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,#e82a3d,#c41f30);padding:14px 16px;display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🚨</div>
+        <div style="background:linear-gradient(135deg,${markerColor},#c41f30);padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">${icon}</div>
             <div style="flex:1;">
                 <div style="color:white;font-weight:700;font-size:1rem;">Emergency Signal</div>
                 <div style="color:rgba(255,255,255,0.75);font-size:0.78rem;">Active • Requires immediate attention</div>
@@ -58,7 +88,7 @@ function buildPopupMessage(signal) {
                 </div>
             </div>` : ''}
 
-            ${signal.causes ? `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:3px;">Cause</div><div style="font-size:0.88rem;color:#e82a3d;font-weight:600;background:#ffeaec;padding:4px 10px;border-radius:8px;display:inline-block;">${signal.causes}</div></div>` : ''}
+            ${signal.causes ? `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:3px;">Cause</div><div style="font-size:0.88rem;color:#e82a3d;font-weight:600;background:#ffeaec;padding:4px 10px;border-radius:8px;display:inline-block;">${icon} ${signal.causes}</div></div>` : ''}
             ${signal.user_health ? `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:3px;">Health Conditions</div><div style="font-size:0.88rem;color:#1a1a2e;">${signal.user_health}</div></div>` : ''}
             ${signal.details ? `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:3px;">Details</div><div style="font-size:0.88rem;color:#1a1a2e;">${signal.details}</div></div>` : ''}
             ${signal.user_notes ? `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:3px;">Notes</div><div style="font-size:0.88rem;color:#1a1a2e;">${signal.user_notes}</div></div>` : ''}
@@ -71,16 +101,35 @@ function buildPopupMessage(signal) {
 window.refreshMarkers = function () {
     if (!window.map) return;
     window.map.eachLayer((layer) => {
-        if (layer instanceof L.CircleMarker) window.map.removeLayer(layer);
+        if (layer instanceof L.Marker || layer instanceof L.CircleMarker) window.map.removeLayer(layer);
     });
     fetch('/api/signals?t=' + new Date().getTime())
         .then(res => res.json())
         .then(signals => {
             signals.forEach(signal => {
                 if (signal.lat && signal.lng) {
-                    const marker = L.circleMarker([signal.lat, signal.lng], {
-                        radius: 12, fillColor: "#e82a3d", color: "white", weight: 2.5, fillOpacity: 0.9
-                    }).addTo(window.map);
+                    const icon = getEmergencyIcon(signal.causes);
+                    const color = getMarkerColor(signal.causes);
+
+                    const divIcon = L.divIcon({
+                        className: '',
+                        html: `<div style="
+                            width: 40px; height: 40px;
+                            background: ${color};
+                            border-radius: 50% 50% 50% 0;
+                            transform: rotate(-45deg);
+                            border: 3px solid white;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                            display: flex; align-items: center; justify-content: center;
+                        ">
+                            <span style="transform: rotate(45deg); font-size: 1.1rem; line-height:1;">${icon}</span>
+                        </div>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40],
+                        popupAnchor: [0, -40]
+                    });
+
+                    const marker = L.marker([signal.lat, signal.lng], { icon: divIcon }).addTo(window.map);
                     marker.bindPopup(buildPopupMessage(signal), { maxWidth: 340, className: 'custom-popup' });
                 }
             });

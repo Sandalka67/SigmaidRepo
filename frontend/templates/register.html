@@ -10,31 +10,31 @@
                             <path d="M8 0L0 3.5V8.5C0 13.2 3.4 17.5 8 20C12.6 17.5 16 13.2 16 8.5V3.5L8 0Z" fill="white"/>
                         </svg>
                     </div>
-                    <h2 class="auth-title">Join Signaid</h2>
-                    <p class="text-muted" style="font-size:0.95rem;">Create an account to access emergency services</p>
+                    <h2 class="auth-title" data-i18n="joinSignaid">Join Signaid</h2>
+                    <p class="text-muted" style="font-size:0.95rem;" data-i18n="registerSub">Create an account to access emergency services</p>
                 </div>
 
                 <form method="POST" action="{{ url_for('register') }}">
                     <div class="mb-3">
-                        <label class="form-label">Full Name</label>
+                        <label class="form-label" data-i18n="fullName">Full Name</label>
                         <input type="text" name="full_name" class="form-control" placeholder="Your full name" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email Address</label>
+                        <label class="form-label" data-i18n="emailAddress">Email Address</label>
                         <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label">Password</label>
+                        <label class="form-label" data-i18n="password">Password</label>
                         <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-auth w-100 mb-3">Create Account</button>
+                    <button type="submit" class="btn btn-auth w-100 mb-3" data-i18n="createAccount">Create Account</button>
                 </form>
 
                 <div class="auth-divider">or</div>
 
                 <div class="text-center" style="font-size:0.92rem;">
-                    <span class="text-muted">Already have an account?</span>
-                    <a href="{{ url_for('login') }}" class="text-decoration-none fw-bold" style="color:#e82a3d;"> Log in here</a>
+                    <span class="text-muted" data-i18n="alreadyHaveAccount">Already have an account?</span>
+                    <a href="{{ url_for('login') }}" class="text-decoration-none fw-bold" style="color:#e82a3d;" data-i18n="logInHere"> Log in here</a>
                 </div>
             </div>
         </div>

@@ -10,27 +10,30 @@
                             <path d="M8 0L0 3.5V8.5C0 13.2 3.4 17.5 8 20C12.6 17.5 16 13.2 16 8.5V3.5L8 0Z" fill="white"/>
                         </svg>
                     </div>
-                    <h2 class="auth-title">Welcome Back</h2>
-                    <p class="text-muted" style="font-size:0.95rem;">Log in to your Signaid dashboard</p>
+                    <h2 class="auth-title" data-i18n="welcomeBack">Welcome Back</h2>
+                    <p class="text-muted" style="font-size:0.95rem;" data-i18n="loginSub">Log in to your Signaid dashboard</p>
                 </div>
 
                 <form method="POST" action="{{ url_for('login') }}">
                     <div class="mb-3">
-                        <label class="form-label">Email Address</label>
+                        <label class="form-label" data-i18n="emailAddress">Email Address</label>
                         <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label">Password</label>
+                    <div class="mb-2">
+                        <label class="form-label" data-i18n="password">Password</label>
                         <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn btn-auth w-100 mb-3">Log In</button>
+                    <div class="text-end mb-4">
+                        <a href="{{ url_for('forgot_password') }}" style="font-size:0.85rem;color:#e82a3d;text-decoration:none;font-weight:500;">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-auth w-100 mb-3" data-i18n="logIn">Log In</button>
                 </form>
 
                 <div class="auth-divider">or</div>
 
                 <div class="text-center" style="font-size:0.92rem;">
-                    <span class="text-muted">New to Signaid?</span>
-                    <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold" style="color:#e82a3d;"> Sign up here</a>
+                    <span class="text-muted" data-i18n="newToSignaid">New to Signaid?</span>
+                    <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold" style="color:#e82a3d;" data-i18n="signUpHere"> Sign up here</a>
                 </div>
             </div>
         </div>

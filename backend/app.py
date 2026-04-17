@@ -1,4 +1,6 @@
 import os
+import secrets
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from database.models import db, User, EmergencySignal
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -49,7 +51,6 @@ def index():
     stats = get_stats()
     active_event = EmergencySignal.query.filter_by(user_id=current_user.id, is_active=True).first()
     has_active = True if active_event else False
-    
     return render_template('index.html', stats=stats, has_active=has_active)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -58,19 +59,14 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         full_name = request.form.get('full_name')
-        
         if User.query.filter_by(email=email).first():
             return "Email already registered! Go back and log in.", 400
-            
         new_user = User(email=email, full_name=full_name)
         new_user.set_password(password)
-        
         db.session.add(new_user)
         db.session.commit()
-        
         login_user(new_user)
         return redirect(url_for('index'))
-        
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -78,15 +74,11 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
         user = User.query.filter_by(email=email).first()
-        
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('index'))
-            
         return "Invalid email or password. Please try again.", 401
-        
     return render_template('login.html')
 
 @app.route('/logout')
@@ -95,6 +87,38 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = secrets.token_urlsafe(32)
+            user.reset_token = token
+            user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            reset_link = url_for('reset_password', token=token, _external=True)
+            print(f"\n{'='*50}")
+            print(f"PASSWORD RESET LINK FOR {email}:")
+            print(f"{reset_link}")
+            print(f"{'='*50}\n")
+        return render_template('forgot_password.html', sent=True)
+    return render_template('forgot_password.html', sent=False)
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or user.reset_token_expiry < datetime.utcnow():
+        return render_template('reset_password.html', invalid=True)
+    if request.method == 'POST':
+        new_password = request.form.get('password')
+        user.set_password(new_password)
+        user.reset_token = None
+        user.reset_token_expiry = None
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', invalid=False, token=token)
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -102,18 +126,14 @@ def profile():
         current_user.phone = request.form.get('phone')
         current_user.health_conditions = request.form.get('health_conditions')
         current_user.notes = request.form.get('notes')
-
         db.session.commit()
-        
         return redirect(url_for('profile'))
-        
     return render_template('profile.html')
 
 @app.route('/api/signal', methods=['POST'])
 @login_required
 def create_signal():
     data = request.json
-    
     new_signal = EmergencySignal(
         user_id=current_user.id,
         lat=data['lat'],
@@ -124,7 +144,6 @@ def create_signal():
     )
     db.session.add(new_signal)
     db.session.commit()
-    
     return jsonify({"status": "created", "stats": get_stats()})
 
 @app.route('/api/resolve', methods=['POST'])
@@ -134,16 +153,14 @@ def resolve_signal():
     if active_signal:
         active_signal.is_active = False
         db.session.commit()
-        
     return jsonify({"status": "resolved", "stats": get_stats()})
 
 @app.route('/api/signals')
 def get_signals():
     active_signals = EmergencySignal.query.filter_by(is_active=True).all()
     signal_data = []
-    
     for sig in active_signals:
-        u = sig.user 
+        u = sig.user
         signal_data.append({
             "lat": sig.lat,
             "lng": sig.lng,
@@ -156,7 +173,6 @@ def get_signals():
             "details": sig.extra_details if sig.extra_details else 'None',
             "timestamp": sig.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ') if sig.timestamp else None
         })
-        
     return jsonify(signal_data)
 
 if __name__ == '__main__':

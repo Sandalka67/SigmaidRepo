@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="profile-container mt-4 mb-5 fade-up">
-    <a href="{{ url_for('index') }}" class="back-link mb-4 d-inline-flex">← Back to map</a>
+    <a href="{{ url_for('index') }}" class="back-link mb-4 d-inline-flex" data-i18n="backToMap">← Back to map</a>
 
     <div class="d-flex align-items-center gap-3 mt-3 mb-5">
         <div class="profile-avatar">
@@ -17,16 +17,15 @@
     <form method="POST" action="{{ url_for('profile') }}">
 
         <div class="mb-5">
-            <div class="section-label">Phone Number</div>
-            <input type="text" name="phone" class="form-control" 
-                value="{{ current_user.phone or '' }}" 
-                placeholder="Enter your phone number"
+            <div class="section-label" data-i18n="phoneNumber">Phone Number</div>
+            <input type="text" name="phone" class="form-control"
+                value="{{ current_user.phone or '' }}"
                 style="max-width:320px;">
         </div>
 
         <div class="mb-5">
-            <div class="section-label">Health Conditions</div>
-            <p class="text-muted mb-3" style="font-size:0.88rem;">Select any conditions that apply — this helps responders.</p>
+            <div class="section-label" data-i18n="healthConditions">Health Conditions</div>
+            <p class="text-muted mb-3" style="font-size:0.88rem;" data-i18n="healthConditionsSub">Select any conditions that apply — this helps responders.</p>
             <div class="d-flex flex-wrap" style="margin-left:-4px;">
                 {% set active_conditions = current_user.health_conditions.split(',') | map('trim') | list if current_user.health_conditions else [] %}
                 {% set all_conditions = ["Heart Disease", "Hypertension", "Diabetes", "Asthma", "Epilepsy", "Allergies (Severe)", "Blood Clotting Disorder", "Chronic Kidney Disease", "Stroke History", "Pacemaker", "Arrhythmia", "COPD", "Cancer (Active)", "Mobility Impairment", "Mental Health Condition", "Pregnancy"] %}
@@ -42,12 +41,13 @@
         </div>
 
         <div class="mb-5">
-            <div class="section-label">Additional Health Notes</div>
+            <div class="section-label" data-i18n="additionalHealthNotes">Additional Health Notes</div>
             <textarea name="notes" class="form-control custom-textarea" rows="4"
+                data-i18n="additionalHealthNotesSub" data-i18n-attr="placeholder"
                 placeholder="Any other health details responders should know...">{{ current_user.notes or '' }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-save">
+        <button type="submit" class="btn btn-save" data-i18n="saveChanges">
             Save Changes
         </button>
     </form>
